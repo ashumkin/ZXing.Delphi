@@ -238,6 +238,26 @@ begin
     Assert.IsNotNull(result, ' Nil result ');
     Assert.IsTrue(result.Text.Equals('1234567'),
       'Code 128 result Text Incorrect: ' + result.Text);
+
+    result := Decode('Code128-laser.png', BarcodeFormat.CODE_128);
+    Assert.IsNotNull(result, ' Nil result ');
+    Assert.IsTrue(result.Text.Equals('1234567'),
+      'Code 128 (laser) result Text Incorrect: ' + result.Text);
+
+    result := Decode('Code128-custom.bmp', BarcodeFormat.CODE_128);
+    Assert.IsNotNull(result, ' Nil result ');
+    Assert.IsTrue(result.Text.Equals('000100101767448'),
+      'Code 128 result Text Incorrect: ' + result.Text);
+
+    result := Decode('Code128-custom.bmp', BarcodeFormat.Auto);
+    Assert.IsNotNull(result, ' Nil result ');
+    Assert.IsTrue(result.Text.Equals('000100101767448'),
+      'Auto Code 128 result Text Incorrect: ' + result.Text);
+
+    result := Decode('Code128-custom-laser.bmp', BarcodeFormat.Auto);
+    Assert.IsNotNull(result, ' Nil result ');
+    Assert.IsTrue(result.Text.Equals('000100101767448'),
+      'Auto Code 128 (laser) result Text Incorrect: ' + result.Text);
   finally
     FreeAndNil(result);
   end;
@@ -255,20 +275,40 @@ begin
     Assert.IsTrue(result.Text.Equals('THIS IS CODE93'),
       'Code 93 - 1 result Text Incorrect: ' + result.Text);
 
+    result := Decode('Code93-1-laser.png', BarcodeFormat.CODE_93);
+    Assert.IsNotNull(result, ' nil result ');
+    Assert.IsTrue(result.Text.Equals('THIS IS CODE93'),
+      'Code 93 - 1 (laser) result Text Incorrect: ' + result.Text);
+
     result := Decode('Code93-2.png', BarcodeFormat.CODE_93);
     Assert.IsNotNull(result, ' Nil result ');
     Assert.IsTrue(result.Text.Equals('ABC CODE93-2'),
       'Code 93 - 2 result Text Incorrect: ' + result.Text);
+
+    result := Decode('Code93-2-laser.png', BarcodeFormat.CODE_93);
+    Assert.IsNotNull(result, ' Nil result ');
+    Assert.IsTrue(result.Text.Equals('ABC CODE93-2'),
+      'Code 93 - 2 (laser) result Text Incorrect: ' + result.Text);
 
     result := Decode('Code93-3.png', BarcodeFormat.CODE_93);
     Assert.IsNotNull(result, ' Nil result ');
     Assert.IsTrue(result.Text.Equals('ABC CODE96'),
       'Code 93 - 3 result Text Incorrect: ' + result.Text);
 
+    result := Decode('Code93-3-laser.png', BarcodeFormat.CODE_93);
+    Assert.IsNotNull(result, ' Nil result ');
+    Assert.IsTrue(result.Text.Equals('ABC CODE96'),
+      'Code 93 - 3 (laser) result Text Incorrect: ' + result.Text);
+
     result := Decode('Code93-3.png', BarcodeFormat.Auto);
     Assert.IsNotNull(result, ' Nil result ');
     Assert.IsTrue(result.Text.Equals('ABC CODE96'),
       'Auto Code 93 - 3 result Text Incorrect: ' + result.Text);
+
+    result := Decode('Code93-3-laser.png', BarcodeFormat.Auto);
+    Assert.IsNotNull(result, ' Nil result ');
+    Assert.IsTrue(result.Text.Equals('ABC CODE96'),
+      'Auto Code 93 - 3 (laser) result Text Incorrect: ' + result.Text);
 
   finally
     FreeAndNil(result);
