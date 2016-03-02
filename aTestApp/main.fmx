@@ -9,7 +9,7 @@ object MainForm: TMainForm
   FormFactor.Devices = [Desktop]
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  DesignerMasterStyle = 2
+  DesignerMasterStyle = 0
   object Layout2: TLayout
     Align = Client
     Size.Width = 640.000000000000000000
@@ -45,35 +45,13 @@ object MainForm: TMainForm
         Text = 'ScanStatus'
       end
     end
-    object imgCamera: TImage
-      MultiResBitmap = <
-        item
-        end>
-      Align = Client
-      Size.Width = 640.000000000000000000
-      Size.Height = 280.000000000000000000
-      Size.PlatformDefault = False
-      WrapMode = Stretch
-    end
-    object Memo1: TMemo
-      Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
-      DataDetectorTypes = []
-      Align = Bottom
-      Position.Y = 324.000000000000000000
-      Size.Width = 640.000000000000000000
-      Size.Height = 208.000000000000000000
-      Size.PlatformDefault = False
-      TabOrder = 1
-      Viewport.Width = 632.000000000000000000
-      Viewport.Height = 200.000000000000000000
-    end
     object ToolBar3: TToolBar
       Align = MostBottom
       Position.Y = 532.000000000000000000
       Size.Width = 640.000000000000000000
       Size.Height = 44.000000000000000000
       Size.PlatformDefault = False
-      TabOrder = 2
+      TabOrder = 1
       object btnStopCamera: TButton
         Align = Left
         Size.Width = 151.000000000000000000
@@ -92,6 +70,45 @@ object MainForm: TMainForm
         TabOrder = 2
         Text = 'Start Camera'
         OnClick = btnStartCameraClick
+      end
+    end
+    object lay1: TLayout
+      Align = Client
+      Size.Width = 640.000000000000000000
+      Size.Height = 488.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 2
+      object Memo1: TMemo
+        Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
+        DataDetectorTypes = []
+        Align = Bottom
+        Position.Y = 280.000000000000000000
+        Size.Width = 640.000000000000000000
+        Size.Height = 208.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 0
+        Viewport.Width = 636.000000000000000000
+        Viewport.Height = 204.000000000000000000
+      end
+      object imgCameraLaser: TImage
+        MultiResBitmap = <
+          item
+          end>
+        Align = Top
+        Size.Width = 640.000000000000000000
+        Size.Height = 16.000000000000000000
+        Size.PlatformDefault = False
+        WrapMode = Original
+      end
+      object imgCamera: TImage
+        MultiResBitmap = <
+          item
+          end>
+        Align = Client
+        Size.Width = 640.000000000000000000
+        Size.Height = 264.000000000000000000
+        Size.PlatformDefault = False
+        WrapMode = Stretch
       end
     end
   end

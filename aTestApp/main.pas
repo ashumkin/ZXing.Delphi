@@ -39,6 +39,8 @@ type
     ToolBar3: TToolBar;
     CameraComponent1: TCameraComponent;
     Memo1: TMemo;
+    imgCameraLaser: TImage;
+    lay1: TLayout;
     procedure btnStartCameraClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure btnStopCameraClick(Sender: TObject);
@@ -47,16 +49,22 @@ type
     procedure CameraComponent1SampleBufferReady(Sender: TObject;
       const ATime: TMediaTime);
   private
+    const cLaserWidth = 16;
+    var
     { Private declarations }
 
     FScanManager: TScanManager;
     FScanInProgress: Boolean;
     frameTake: Integer;
+    FScanBitmap: TBitmap;
+    FLaserScanBitmap: TBitmap;
     procedure GetImage();
     function AppEvent(AAppEvent: TApplicationEvent; AContext: TObject): Boolean;
 
   public
     { Public declarations }
+    procedure AfterConstruction; override;
+    procedure BeforeDestruction; override;
   end;
 
 var
@@ -122,17 +130,15 @@ end;
 
 procedure TMainForm.GetImage;
 var
-  scanBitmap: TBitmap;
   ReadResult: TReadResult;
-
+  LBeginTime: Cardinal;
+  LSrcRect, LDestRect: TRectF;
 begin
-
-  CameraComponent1.SampleBufferToBitmap(imgCamera.Bitmap, True);
-
-  if (FScanInProgress) then
-  begin
-    Exit;
-  end;
+  CameraComponent1.SampleBufferToBitmap(FScanBitmap, True);
+  // draw image
+  imgCamera.Bitmap.Assign(FScanBitmap);
+  // init bitmap of imgCameraLaser
+  imgCameraLaser.Bitmap.Assign(imgCamera.Bitmap);
 
   {
     inc(frameTake);
@@ -142,8 +148,41 @@ begin
     end;
   }
 
-  scanBitmap := TBitmap.Create();
-  scanBitmap.Assign(imgCamera.Bitmap);
+  // calc "laser area"
+  LSrcRect.Create(0, 0, FScanBitmap.Width, FScanBitmap.Height);
+  LDestRect := LSrcRect;
+  OffsetRect(LSrcRect, 0, (LSrcRect.Height - cLaserWidth) / 2);
+  try
+    LSrcRect.Height := cLaserWidth;
+    LDestRect.Height := LSrcRect.Height;
+    // get "laser area"
+    if imgCameraLaser.Bitmap.Canvas.BeginScene then
+      try
+        imgCameraLaser.Bitmap.Canvas.DrawBitmap(imgCamera.Bitmap, LSrcRect, LDestRect, 1, True);
+      finally
+        imgCameraLaser.Bitmap.Canvas.EndScene;
+      end;
+    // draw "laser"
+    if imgCamera.Bitmap.Canvas.BeginScene then
+      try
+        imgCamera.Bitmap.Canvas.Stroke.Thickness := 3;
+        imgCamera.Bitmap.Canvas.Stroke.Color := TAlphaColorRec.Red;
+        imgCamera.Bitmap.Canvas.DrawRect(LSrcRect, 0, 0, AllCorners, 1);
+      finally
+        imgCamera.Bitmap.Canvas.EndScene;
+      end;
+  except
+    on E: Exception do
+    begin
+      Log.d('Exception: %s: %s', [E.ClassName, E.Message]);
+      Exit;
+    end;
+  end;
+
+  if (FScanInProgress) then
+  begin
+    Exit;
+  end;
 
   TTask.Run(
     procedure
@@ -152,9 +191,25 @@ begin
       try
         FScanInProgress := True;
 
-        scanBitmap.Assign(imgCamera.Bitmap);
-
-        ReadResult := FScanManager.Scan(scanBitmap);
+        FLaserScanBitmap.Assign(imgCameraLaser.Bitmap);
+        // scan laser first
+        {$IFDEF DEBUG}
+        LBeginTime := TThread.GetTickCount;
+        {$ENDIF}
+        ReadResult := FScanManager.Scan(FLaserScanBitmap);
+        {$IFDEF DEBUG}
+        Log.d('Laser scan completed in %d ticks', [TThread.GetTickCount - LBeginTime]);
+        {$ENDIF}
+        if not Assigned(ReadResult) then
+        begin
+          {$IFDEF DEBUG}
+          LBeginTime := TThread.GetTickCount;
+          {$ENDIF}
+          ReadResult := FScanManager.Scan(FScanBitmap);
+          {$IFDEF DEBUG}
+          Log.d('Scan completed in %d ticks', [TThread.GetTickCount - LBeginTime]);
+          {$ENDIF}
+        end;
         FScanInProgress := False;
       except
         on E: Exception do
@@ -166,11 +221,6 @@ begin
               // lblScanStatus.Text := E.Message;
               // lblScanResults.Text := '';
             end);
-
-          if (scanBitmap <> nil) then
-          begin
-            scanBitmap.Free;
-          end;
 
           Exit;
 
@@ -191,12 +241,7 @@ begin
 
           if (ReadResult <> nil) then
           begin
-            memo1.Lines.Insert(0,ReadResult.Text);
-          end;
-
-          if (scanBitmap <> nil) then
-          begin
-            scanBitmap.Free;
+            memo1.Lines.Insert(0, FormatDateTime('yyyy-mm-dd hh:nn:ss.zzz: ', Now) + ReadResult.Text);
           end;
 
           FreeAndNil(ReadResult);
@@ -206,11 +251,17 @@ begin
 
 end;
 
-{ Make sure the ca mera is released if you're going away. }
+procedure TMainForm.AfterConstruction;
+begin
+  inherited;
+  FScanBitmap := TBitmap.Create;
+  FLaserScanBitmap := TBitmap.Create;
+end;
+
 function TMainForm.AppEvent(AAppEvent: TApplicationEvent;
 AContext: TObject): Boolean;
 begin
-
+{ Make sure the camera is released if you're going away. }
   case AAppEvent of
     TApplicationEvent.WillBecomeInactive:
       CameraComponent1.Active := False;
@@ -220,6 +271,13 @@ begin
       CameraComponent1.Active := False;
   end;
 
+end;
+
+procedure TMainForm.BeforeDestruction;
+begin
+  FScanBitmap.DisposeOf;
+  FLaserScanBitmap.DisposeOf;
+  inherited;
 end;
 
 end.
