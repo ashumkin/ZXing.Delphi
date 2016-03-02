@@ -110,6 +110,7 @@ procedure TMainForm.btnStartCameraClick(Sender: TObject);
 begin
   CameraComponent1.Active := False;
   CameraComponent1.Kind := FMX.Media.TCameraKind.BackCamera;
+  CameraComponent1.Quality := TVideoCaptureQuality.MediumQuality;
   CameraComponent1.Active := True;
 
   lblScanStatus.Text := '';
